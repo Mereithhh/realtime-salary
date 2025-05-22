@@ -8,20 +8,12 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:18-alpine AS runner
-WORKDIR /app
+FROM nginx:alpine AS runner
+WORKDIR /usr/share/nginx/html
 
-ENV NODE_ENV production
+COPY --from=builder /app/dist .
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-COPY --from=builder /app/package*.json ./
-RUN npm ci --only=production
+EXPOSE 80
 
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.js ./
-
-USER node
-
-EXPOSE 3000
-
-CMD ["npm", "start"] 
+CMD ["nginx", "-g", "daemon off;"] 
