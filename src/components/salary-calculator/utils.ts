@@ -1,4 +1,4 @@
-import { SalaryData, periodSeconds } from './types';
+import { SalaryData, periodSeconds, currencySymbols } from './types';
 
 /**
  * 计算给定时间内的收入
