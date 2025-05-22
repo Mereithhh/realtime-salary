@@ -1,11 +1,11 @@
-import { SalaryData, currencySymbols, periodSeconds } from './types';
+import { SalaryData, periodSeconds } from './types';
 
 /**
  * 计算给定时间内的收入
  */
 export function calculateEarnings(salaryData: SalaryData, seconds: number): number {
-  const { amount, period } = salaryData;
-  const totalPeriodSeconds = periodSeconds[period];
+  const { amount, period, workingHours, includeHolidays } = salaryData;
+  const totalPeriodSeconds = periodSeconds[period](workingHours, includeHolidays);
   
   // 每秒收入 = 总收入 / 周期总秒数
   const perSecond = amount / totalPeriodSeconds;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { SalaryData, currencySymbols, periodLabels, periodSeconds } from './types';
+import { SalaryData, currencySymbols, periodLabels, WORKING_DAYS_PER_YEAR } from './types';
 import { calculateEarnings, formatCurrency } from './utils';
 import { ArrowLeftIcon } from '@radix-ui/react-icons';
 
@@ -16,7 +16,7 @@ export function EarningsDisplay({ salaryData, onReset }: EarningsDisplayProps) {
   const [startTime] = useState(Date.now());
   
   // 计算每秒收入
-  const earningsPerSecond = salaryData.amount / periodSeconds[salaryData.period];
+  const earningsPerSecond = calculateEarnings(salaryData, 1);
   
   // 设置一个目标时间，显示进度条（例如显示1小时内的进度）
   const targetTime = 60 * 60 * 1000; // 1小时，毫秒
@@ -40,6 +40,11 @@ export function EarningsDisplay({ salaryData, onReset }: EarningsDisplayProps) {
   
   const formattedEarnings = formatCurrency(earnings, salaryData.currency);
   const formattedPerSecond = formatCurrency(earningsPerSecond, salaryData.currency);
+
+  // 计算年化收入（基于实际工作时间）
+  const annualizedIncome = salaryData.period === 'yearly' 
+    ? salaryData.amount 
+    : salaryData.amount * (salaryData.period === 'monthly' ? 12 : salaryData.period === 'weekly' ? 52 : WORKING_DAYS_PER_YEAR * salaryData.workingHours);
   
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -57,6 +62,11 @@ export function EarningsDisplay({ salaryData, onReset }: EarningsDisplayProps) {
           <p className="text-sm text-muted-foreground">
             每秒 {formattedPerSecond}
           </p>
+          <div className="text-xs text-muted-foreground mt-2">
+            <p>每天工作 {salaryData.workingHours} 小时</p>
+            <p>年化收入 {currencySymbols[salaryData.currency]}{annualizedIncome.toLocaleString('zh-CN')}</p>
+            <p>{salaryData.includeHolidays ? '包含节假日' : '不包含节假日和周末'}</p>
+          </div>
         </div>
       </div>
       

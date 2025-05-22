@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Period, SalaryData, periodLabels } from './types';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
+import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({
   amount: z.string().min(1, { message: '请输入薪资金额' }).refine(
@@ -15,7 +16,12 @@ const formSchema = z.object({
     { message: '请输入有效的数字' }
   ),
   period: z.enum(['yearly', 'monthly', 'weekly', 'hourly']),
-  currency: z.string().min(1, { message: '请选择货币' })
+  currency: z.string().min(1, { message: '请选择货币' }),
+  workingHours: z.string().min(1, { message: '请输入工作时间' }).refine(
+    (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0 && parseFloat(val) <= 24,
+    { message: '请输入1-24之间的有效工作时间' }
+  ),
+  includeHolidays: z.boolean()
 });
 
 interface SalaryFormProps {
@@ -30,7 +36,9 @@ export function SalaryForm({ onSubmit }: SalaryFormProps) {
     defaultValues: {
       amount: '',
       period: 'yearly',
-      currency: 'CNY'
+      currency: 'CNY',
+      workingHours: '8',
+      includeHolidays: false
     }
   });
 
@@ -42,7 +50,9 @@ export function SalaryForm({ onSubmit }: SalaryFormProps) {
       onSubmit({
         amount: parseFloat(values.amount),
         period: values.period as Period,
-        currency: values.currency
+        currency: values.currency,
+        workingHours: parseFloat(values.workingHours),
+        includeHolidays: values.includeHolidays
       });
       setIsSubmitting(false);
     }, 400);
@@ -115,6 +125,50 @@ export function SalaryForm({ onSubmit }: SalaryFormProps) {
                 </SelectContent>
               </Select>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="workingHours"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>每天工作时间（小时）</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="例如：8" 
+                  type="number" 
+                  min="1"
+                  max="24"
+                  step="0.5"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="includeHolidays"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  包含节假日
+                </FormLabel>
+                <div className="text-sm text-muted-foreground">
+                  计算时包含周末和法定节假日
+                </div>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
             </FormItem>
           )}
         />
