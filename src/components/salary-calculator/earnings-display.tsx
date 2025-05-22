@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { SalaryData, currencySymbols, periodLabels, WORKING_DAYS_PER_YEAR } from './types';
+import { SalaryData, currencySymbols, periodLabels } from './types';
 import { calculateEarnings, formatCurrency } from './utils';
 import { ArrowLeftIcon } from '@radix-ui/react-icons';
 
@@ -44,7 +44,7 @@ export function EarningsDisplay({ salaryData, onReset }: EarningsDisplayProps) {
   // 计算年化收入（基于实际工作时间）
   const annualizedIncome = salaryData.period === 'yearly' 
     ? salaryData.amount 
-    : salaryData.amount * (salaryData.period === 'monthly' ? 12 : salaryData.period === 'weekly' ? 52 : WORKING_DAYS_PER_YEAR * salaryData.workingHours);
+    : salaryData.amount * (salaryData.period === 'monthly' ? 12 : salaryData.period === 'weekly' ? 52 : (365 - salaryData.holidayDays) * salaryData.workingHours);
   
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -65,7 +65,7 @@ export function EarningsDisplay({ salaryData, onReset }: EarningsDisplayProps) {
           <div className="text-xs text-muted-foreground mt-2">
             <p>每天工作 {salaryData.workingHours} 小时</p>
             <p>年化收入 {currencySymbols[salaryData.currency]}{annualizedIncome.toLocaleString('zh-CN')}</p>
-            <p>{salaryData.includeHolidays ? '包含节假日' : '不包含节假日和周末'}</p>
+            <p>每年节假日 {salaryData.holidayDays} 天</p>
           </div>
         </div>
       </div>

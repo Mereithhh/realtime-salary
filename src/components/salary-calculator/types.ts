@@ -3,7 +3,7 @@ export interface SalaryData {
   period: Period;
   currency: string;
   workingHours: number;
-  includeHolidays: boolean;
+  holidayDays: number;
 }
 
 export type Period = 'yearly' | 'monthly' | 'weekly' | 'hourly';
@@ -15,21 +15,27 @@ export const periodLabels: Record<Period, string> = {
   hourly: '时薪'
 };
 
-// 一年工作日计算：365天 - 104天周末 - 11天法定节假日 = 250天
-export const WORKING_DAYS_PER_YEAR = 250;
-export const HOLIDAYS_PER_YEAR = 11; // 中国法定节假日
-export const WEEKENDS_PER_YEAR = 104; // 52周 × 2天
+// 预设的节假日方案
+export const holidayPresets = [
+  { label: '中国标准（115天）', value: 115 }, // 104天周末 + 11天法定节假日
+  { label: '无节假日', value: 0 },
+  { label: '自定义', value: 'custom' }
+] as const;
 
-export const periodSeconds: Record<Period, (workingHours: number, includeHolidays: boolean) => number> = {
-  yearly: (workingHours, includeHolidays) => {
-    const workingDays = includeHolidays ? 365 : WORKING_DAYS_PER_YEAR;
+// 一年工作日计算：365天 - 节假日天数
+export const periodSeconds: Record<Period, (workingHours: number, holidayDays: number) => number> = {
+  yearly: (workingHours, holidayDays) => {
+    const workingDays = 365 - holidayDays;
     return workingDays * workingHours * 3600;
   },
-  monthly: (workingHours, includeHolidays) => {
-    const workingDays = includeHolidays ? 30 : 21; // 每月平均21个工作日
+  monthly: (workingHours, holidayDays) => {
+    const workingDays = 30 - Math.round(holidayDays / 12); // 每月平均节假日
     return workingDays * workingHours * 3600;
   },
-  weekly: (workingHours) => 5 * workingHours * 3600, // 每周5个工作日
+  weekly: (workingHours, holidayDays) => {
+    const workingDays = 7 - Math.round(holidayDays / 52); // 每周平均节假日
+    return workingDays * workingHours * 3600;
+  },
   hourly: () => 3600 // 1小时
 };
 

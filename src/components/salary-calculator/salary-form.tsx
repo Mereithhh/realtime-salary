@@ -6,9 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Period, SalaryData, periodLabels } from './types';
+import { Period, SalaryData, periodLabels, holidayPresets } from './types';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
-import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({
   amount: z.string().min(1, { message: '请输入薪资金额' }).refine(
@@ -21,7 +20,8 @@ const formSchema = z.object({
     (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0 && parseFloat(val) <= 24,
     { message: '请输入1-24之间的有效工作时间' }
   ),
-  includeHolidays: z.boolean()
+  holidayPreset: z.string(),
+  customHolidays: z.string().optional()
 });
 
 interface SalaryFormProps {
@@ -30,6 +30,7 @@ interface SalaryFormProps {
 
 export function SalaryForm({ onSubmit }: SalaryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCustomHolidays, setShowCustomHolidays] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,21 +39,25 @@ export function SalaryForm({ onSubmit }: SalaryFormProps) {
       period: 'yearly',
       currency: 'CNY',
       workingHours: '8',
-      includeHolidays: false
+      holidayPreset: '115',
+      customHolidays: ''
     }
   });
 
   function handleSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     
-    // 模拟提交延迟，增加用户体验
+    const holidayDays = values.holidayPreset === 'custom' 
+      ? parseInt(values.customHolidays || '0')
+      : parseInt(values.holidayPreset);
+
     setTimeout(() => {
       onSubmit({
         amount: parseFloat(values.amount),
         period: values.period as Period,
         currency: values.currency,
         workingHours: parseFloat(values.workingHours),
-        includeHolidays: values.includeHolidays
+        holidayDays
       });
       setIsSubmitting(false);
     }, 400);
@@ -152,26 +157,56 @@ export function SalaryForm({ onSubmit }: SalaryFormProps) {
 
         <FormField
           control={form.control}
-          name="includeHolidays"
+          name="holidayPreset"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">
-                  包含节假日
-                </FormLabel>
-                <div className="text-sm text-muted-foreground">
-                  计算时包含周末和法定节假日
-                </div>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
+            <FormItem>
+              <FormLabel>节假日设置</FormLabel>
+              <Select 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  setShowCustomHolidays(value === 'custom');
+                }} 
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择节假日方案" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {holidayPresets.map((preset) => (
+                    <SelectItem key={preset.value.toString()} value={preset.value.toString()}>
+                      {preset.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
             </FormItem>
           )}
         />
+
+        {showCustomHolidays && (
+          <FormField
+            control={form.control}
+            name="customHolidays"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>自定义节假日天数</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="输入年度节假日总天数" 
+                    type="number" 
+                    min="0"
+                    max="365"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         
         <Button 
           type="submit" 
