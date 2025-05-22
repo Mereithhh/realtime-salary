@@ -24,11 +24,11 @@ export const holidayPresets = [
 
 // 薪资预设方案
 export const salaryPresets = [
-  { label: '月薪1万', amount: 10000, period: 'monthly' as Period },
-  { label: '月薪2万', amount: 20000, period: 'monthly' as Period },
-  { label: '年薪50万', amount: 500000, period: 'yearly' as Period },
-  { label: '年薪100万', amount: 1000000, period: 'yearly' as Period },
-  { label: '年薪一个亿', amount: 100000000, period: 'yearly' as Period },
+  { label: '月薪1万', amount: 10000, period: 'monthly' as Period, description: "" },
+  { label: '月薪2万', amount: 20000, period: 'monthly' as Period, description: "" },
+  { label: '年薪50万', amount: 500000, period: 'yearly' as Period, description: "" },
+  { label: '年薪100万', amount: 1000000, period: 'yearly' as Period ,description: "" },
+  { label: '年薪一个亿', amount: 100000000, period: 'yearly' as Period,description: "" },
   { label: '存款一个亿(年化2%)', amount: 2000000, period: 'yearly' as Period, description: '一亿存款年化2%的利息收入' },
   { label: '躺着赚一个亿', amount: 100000000, period: 'yearly' as Period, description: '每年躺着就能赚一个亿，人生赢家！' }
 ] as const;
