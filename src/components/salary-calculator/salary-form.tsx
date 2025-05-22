@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Period, SalaryData, periodLabels, holidayPresets } from './types';
+import { Period, SalaryData, periodLabels, holidayPresets, salaryPresets } from './types';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
 
 const formSchema = z.object({
@@ -63,9 +63,36 @@ export function SalaryForm({ onSubmit }: SalaryFormProps) {
     }, 400);
   }
 
+  function handlePresetSelect(preset: typeof salaryPresets[number]) {
+    form.setValue('amount', preset.amount.toString());
+    form.setValue('period', preset.period);
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <div className="space-y-2">
+          <FormLabel>快速选择</FormLabel>
+          <div className="grid grid-cols-2 gap-2">
+            {salaryPresets.map((preset) => (
+              <Button
+                key={preset.label}
+                type="button"
+                variant="outline"
+                className="h-auto py-2 px-3"
+                onClick={() => handlePresetSelect(preset)}
+              >
+                <div className="text-left">
+                  <div className="font-medium">{preset.label}</div>
+                  {preset.description && (
+                    <div className="text-xs text-muted-foreground">{preset.description}</div>
+                  )}
+                </div>
+              </Button>
+            ))}
+          </div>
+        </div>
+
         <FormField
           control={form.control}
           name="currency"
