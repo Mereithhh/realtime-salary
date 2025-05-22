@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Period, SalaryData, periodLabels, holidayPresets, salaryPresets } from './types';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const formSchema = z.object({
   amount: z.string().min(1, { message: '请输入薪资金额' }).refine(
@@ -71,28 +72,56 @@ export function SalaryForm({ onSubmit }: SalaryFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="space-y-2">
-          <FormLabel>快速选择</FormLabel>
-          <div className="grid grid-cols-2 gap-2">
-            {salaryPresets.map((preset) => (
-              <Button
-                key={preset.label}
-                type="button"
-                variant="outline"
-                className="h-auto py-2 px-3"
-                onClick={() => handlePresetSelect(preset)}
-              >
-                <div className="text-left">
-                  <div className="font-medium">{preset.label}</div>
-                  {preset.description && (
-                    <div className="text-xs text-muted-foreground">{preset.description}</div>
-                  )}
-                </div>
-              </Button>
-            ))}
-          </div>
-        </div>
-
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center justify-between">
+                薪资金额
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm">快速选择</Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-3" align="end">
+                    <div className="grid gap-2">
+                      {salaryPresets.map((preset) => (
+                        <Button
+                          key={preset.label}
+                          type="button"
+                          variant="ghost"
+                          className="h-auto w-full justify-start px-2 py-1.5"
+                          onClick={() => {
+                            handlePresetSelect(preset);
+                            document.body.click(); // 关闭弹窗
+                          }}
+                        >
+                          <div className="text-left">
+                            <div className="font-medium">{preset.label}</div>
+                            {preset.description && (
+                              <div className="text-xs text-muted-foreground">{preset.description}</div>
+                            )}
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="例如：120000" 
+                  type="number" 
+                  min="1"
+                  step="any" 
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
         <FormField
           control={form.control}
           name="currency"
@@ -113,26 +142,6 @@ export function SalaryForm({ onSubmit }: SalaryFormProps) {
                   <SelectItem value="JPY">日元 (¥)</SelectItem>
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="amount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>薪资金额</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="例如：120000" 
-                  type="number" 
-                  min="1"
-                  step="any" 
-                  {...field} 
-                />
-              </FormControl>
               <FormMessage />
             </FormItem>
           )}
