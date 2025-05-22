@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Period, SalaryData, periodLabels, holidayPresets, salaryPresets } from './types';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from '@/components/ui/popover';
 
 const formSchema = z.object({
   amount: z.string().min(1, { message: '请输入薪资金额' }).refine(
@@ -86,23 +86,21 @@ export function SalaryForm({ onSubmit }: SalaryFormProps) {
                   <PopoverContent className="w-80 p-3" align="end">
                     <div className="grid gap-2">
                       {salaryPresets.map((preset) => (
-                        <Button
-                          key={preset.label}
-                          type="button"
-                          variant="ghost"
-                          className="h-auto w-full justify-start px-2 py-1.5"
-                          onClick={() => {
-                            handlePresetSelect(preset);
-                            document.body.click(); // 关闭弹窗
-                          }}
-                        >
-                          <div className="text-left">
-                            <div className="font-medium">{preset.label}</div>
-                            {preset.description && (
-                              <div className="text-xs text-muted-foreground">{preset.description}</div>
-                            )}
-                          </div>
-                        </Button>
+                        <PopoverClose key={preset.label} asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="h-auto w-full justify-start px-2 py-1.5"
+                            onClick={() => handlePresetSelect(preset)}
+                          >
+                            <div className="text-left">
+                              <div className="font-medium">{preset.label}</div>
+                              {preset.description && (
+                                <div className="text-xs text-muted-foreground">{preset.description}</div>
+                              )}
+                            </div>
+                          </Button>
+                        </PopoverClose>
                       ))}
                     </div>
                   </PopoverContent>
